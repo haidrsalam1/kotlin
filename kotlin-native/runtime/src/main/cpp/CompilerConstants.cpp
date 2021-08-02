@@ -6,6 +6,7 @@
 #include "CompilerConstants.hpp"
 
 #include "Common.h"
+#include "SourceInfo.h"
 
 using namespace kotlin;
 
@@ -13,6 +14,7 @@ using namespace kotlin;
 RUNTIME_WEAK int32_t Kotlin_destroyRuntimeMode = 1;
 RUNTIME_WEAK int32_t Kotiln_gcAggressive = 0;
 RUNTIME_WEAK int32_t Kotlin_workerExceptionHandling = 0;
+RUNTIME_WEAK int (*Kotlin_getSourceInfo_Function)(void* addr, SourceInfo *result, int result_size) = nullptr;
 
 ALWAYS_INLINE compiler::DestroyRuntimeMode compiler::destroyRuntimeMode() noexcept {
     return static_cast<compiler::DestroyRuntimeMode>(Kotlin_destroyRuntimeMode);
