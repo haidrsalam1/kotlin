@@ -882,16 +882,19 @@ sealed class KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = TypeMismatch::class
         abstract val expectedType: KtType
         abstract val actualType: KtType
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class ThrowableTypeMismatch : KtFirDiagnostic<PsiElement>() {
         override val diagnosticClass get() = ThrowableTypeMismatch::class
         abstract val actualType: KtType
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class ConditionTypeMismatch : KtFirDiagnostic<PsiElement>() {
         override val diagnosticClass get() = ConditionTypeMismatch::class
         abstract val actualType: KtType
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class ArgumentTypeMismatch : KtFirDiagnostic<PsiElement>() {
@@ -946,6 +949,7 @@ sealed class KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = AssignmentTypeMismatch::class
         abstract val expectedType: KtType
         abstract val actualType: KtType
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class ResultTypeMismatch : KtFirDiagnostic<KtExpression>() {
@@ -1186,6 +1190,7 @@ sealed class KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         abstract val expectedType: KtType
         abstract val actualType: KtType
         abstract val targetFunction: KtSymbol
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class CyclicGenericUpperBound : KtFirDiagnostic<PsiElement>() {
@@ -1237,6 +1242,7 @@ sealed class KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         abstract val desiredType: KtType
         abstract val subject: KtExpression
         abstract val description: String
+        abstract val isCastToNotNull: Boolean
     }
 
     abstract class ExtensionInClassReferenceNotAllowed : KtFirDiagnostic<KtExpression>() {
@@ -1658,6 +1664,7 @@ sealed class KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = InitializerTypeMismatch::class
         abstract val expectedType: KtType
         abstract val actualType: KtType
+        abstract val isMismatchDueToNullability: Boolean
     }
 
     abstract class GetterVisibilityDiffersFromPropertyVisibility : KtFirDiagnostic<KtModifierListOwner>() {
