@@ -393,14 +393,17 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         val TYPE_MISMATCH by error<PsiElement> {
             parameter<ConeKotlinType>("expectedType")
             parameter<ConeKotlinType>("actualType")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
 
         val THROWABLE_TYPE_MISMATCH by error<PsiElement> {
             parameter<ConeKotlinType>("actualType")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
 
         val CONDITION_TYPE_MISMATCH by error<PsiElement> {
             parameter<ConeKotlinType>("actualType")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
 
         val ARGUMENT_TYPE_MISMATCH by error<PsiElement> {
@@ -438,6 +441,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         val ASSIGNMENT_TYPE_MISMATCH by error<KtExpression> {
             parameter<ConeKotlinType>("expectedType")
             parameter<ConeKotlinType>("actualType")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
 
         val RESULT_TYPE_MISMATCH by error<KtExpression> {
@@ -569,6 +573,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<ConeKotlinType>("expectedType")
             parameter<ConeKotlinType>("actualType")
             parameter<FirSimpleFunction>("targetFunction")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
 
         val CYCLIC_GENERIC_UPPER_BOUND by error<PsiElement>()
@@ -607,6 +612,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<ConeKotlinType>("desiredType")
             parameter<FirExpression>("subject")
             parameter<String>("description")
+            parameter<Boolean>("isCastToNotNull")
         }
     }
 
@@ -856,6 +862,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         val INITIALIZER_TYPE_MISMATCH by error<KtProperty>(PositioningStrategy.PROPERTY_INITIALIZER) {
             parameter<ConeKotlinType>("expectedType")
             parameter<ConeKotlinType>("actualType")
+            parameter<Boolean>("isMismatchDueToNullability")
         }
         val GETTER_VISIBILITY_DIFFERS_FROM_PROPERTY_VISIBILITY by error<KtModifierListOwner>(PositioningStrategy.VISIBILITY_MODIFIER)
         val SETTER_VISIBILITY_INCONSISTENT_WITH_PROPERTY_VISIBILITY by error<KtModifierListOwner>(PositioningStrategy.VISIBILITY_MODIFIER)

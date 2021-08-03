@@ -1404,6 +1404,7 @@ internal class InapplicableCandidateImpl(
 internal class TypeMismatchImpl(
     override val expectedType: KtType,
     override val actualType: KtType,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.TypeMismatch(), KtAbstractFirDiagnostic<PsiElement> {
@@ -1412,6 +1413,7 @@ internal class TypeMismatchImpl(
 
 internal class ThrowableTypeMismatchImpl(
     override val actualType: KtType,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.ThrowableTypeMismatch(), KtAbstractFirDiagnostic<PsiElement> {
@@ -1420,6 +1422,7 @@ internal class ThrowableTypeMismatchImpl(
 
 internal class ConditionTypeMismatchImpl(
     override val actualType: KtType,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.ConditionTypeMismatch(), KtAbstractFirDiagnostic<PsiElement> {
@@ -1507,6 +1510,7 @@ internal class NamedParameterNotFoundImpl(
 internal class AssignmentTypeMismatchImpl(
     override val expectedType: KtType,
     override val actualType: KtType,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.AssignmentTypeMismatch(), KtAbstractFirDiagnostic<KtExpression> {
@@ -1903,6 +1907,7 @@ internal class ReturnTypeMismatchImpl(
     override val expectedType: KtType,
     override val actualType: KtType,
     override val targetFunction: KtSymbol,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.ReturnTypeMismatch(), KtAbstractFirDiagnostic<KtExpression> {
@@ -1981,6 +1986,7 @@ internal class SmartcastImpossibleImpl(
     override val desiredType: KtType,
     override val subject: KtExpression,
     override val description: String,
+    override val isCastToNotNull: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.SmartcastImpossible(), KtAbstractFirDiagnostic<KtExpression> {
@@ -2663,6 +2669,7 @@ internal class WrongSetterParameterTypeImpl(
 internal class InitializerTypeMismatchImpl(
     override val expectedType: KtType,
     override val actualType: KtType,
+    override val isMismatchDueToNullability: Boolean,
     firDiagnostic: FirPsiDiagnostic,
     override val token: ValidityToken,
 ) : KtFirDiagnostic.InitializerTypeMismatch(), KtAbstractFirDiagnostic<KtProperty> {
