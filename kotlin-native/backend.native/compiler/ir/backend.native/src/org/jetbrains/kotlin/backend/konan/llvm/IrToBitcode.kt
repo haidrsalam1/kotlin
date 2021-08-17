@@ -366,7 +366,7 @@ internal class CodeGeneratorVisitor(val context: Context, val lifetimes: Map<IrE
 
         context.llvm.initializersGenerationState.globalInitFunction?.let { fileInitFunction ->
             generateFunction(codegen, fileInitFunction, null, null) {
-                using(FunctionScope(fileInitFunction, it)) {
+                using(FunctionScope(fileInitFunction, this)) {
                     val parameterScope = ParameterScope(fileInitFunction, functionGenerationContext)
                     using(parameterScope) usingParameterScope@{
                         using(VariableScope()) usingVariableScope@{
@@ -383,7 +383,7 @@ internal class CodeGeneratorVisitor(val context: Context, val lifetimes: Map<IrE
 
         context.llvm.initializersGenerationState.threadLocalInitFunction?.let { fileInitFunction ->
             generateFunction(codegen, fileInitFunction, null, null) {
-                using(FunctionScope(fileInitFunction, it)) {
+                using(FunctionScope(fileInitFunction, this)) {
                     val parameterScope = ParameterScope(fileInitFunction, functionGenerationContext)
                     using(parameterScope) usingParameterScope@{
                         using(VariableScope()) usingVariableScope@{
@@ -470,7 +470,7 @@ internal class CodeGeneratorVisitor(val context: Context, val lifetimes: Map<IrE
         )
         LLVMSetLinkage(initFunction, LLVMLinkage.LLVMPrivateLinkage)
         generateFunction(codegen, initFunction) {
-            using(FunctionScope(initFunction, "init_body", it)) {
+            using(FunctionScope(initFunction, "init_body", this)) {
                 val bbInit = basicBlock("init", null)
                 val bbLocalInit = basicBlock("local_init", null)
                 val bbLocalAlloc = basicBlock("local_alloc", null)
@@ -830,7 +830,7 @@ internal class CodeGeneratorVisitor(val context: Context, val lifetimes: Map<IrE
             generateFunction(codegen, declaration,
                     declaration.location(start = true),
                     declaration.location(start = false)) {
-                using(FunctionScope(declaration, it)) {
+                using(FunctionScope(declaration, this)) {
                     val parameterScope = ParameterScope(declaration, functionGenerationContext)
                     using(parameterScope) usingParameterScope@{
                         using(VariableScope()) usingVariableScope@{
