@@ -2,6 +2,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(X)
   upperBounds: [
     kotlin/Any?
   ]
@@ -36,6 +37,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: Z
   origin: SOURCE
+  owner: null
   upperBounds: [
     kotlin/Any?
   ]

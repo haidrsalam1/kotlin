@@ -2,6 +2,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: X
   origin: SOURCE
+  owner: KtFirFunctionSymbol(/foo)
   upperBounds: [
     kotlin/Any?
   ]

@@ -2,6 +2,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(X)
   upperBounds: [
     kotlin/Any?
   ]
@@ -12,6 +13,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T1
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(X.Y)
   upperBounds: [
     kotlin/Any?
   ]
@@ -46,6 +48,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T2
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(X.Z)
   upperBounds: [
     kotlin/Any?
   ]
@@ -80,6 +83,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T3
   origin: SOURCE
+  owner: KtFirFunctionSymbol(/X.foo)
   upperBounds: [
     kotlin/Any?
   ]
@@ -90,6 +94,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T4
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(<local>/U)
   upperBounds: [
     kotlin/Any?
   ]
@@ -100,6 +105,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T5
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(<local>/K)
   upperBounds: [
     kotlin/Any?
   ]
@@ -134,6 +140,7 @@ KtFirTypeParameterSymbol:
   isReified: false
   name: T6
   origin: SOURCE
+  owner: KtFirNamedClassOrObjectSymbol(<local>/C)
   upperBounds: [
     kotlin/Any?
   ]
