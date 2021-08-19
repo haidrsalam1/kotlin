@@ -76,7 +76,8 @@ sealed class ImplicitReceiverValue<S : FirBasedSymbol<*>>(
     val boundSymbol: S,
     type: ConeKotlinType,
     protected val useSiteSession: FirSession,
-    protected val scopeSession: ScopeSession
+    protected val scopeSession: ScopeSession,
+    private val mutable: Boolean,
 ) : ReceiverValue {
     final override var type: ConeKotlinType = type
         private set
@@ -96,6 +97,7 @@ sealed class ImplicitReceiverValue<S : FirBasedSymbol<*>>(
      * Should be called only in ImplicitReceiverStack
      */
     internal fun replaceType(type: ConeKotlinType) {
+        if (!mutable) throw IllegalStateException("Cannot mutate an immutable ImplicitReceiverValue")
         if (type == this.type) return
         this.type = type
         receiverExpression = if (type == originalReceiverExpression.typeRef.coneType) {
@@ -110,6 +112,8 @@ sealed class ImplicitReceiverValue<S : FirBasedSymbol<*>>(
         }
         implicitScope = type.scope(useSiteSession, scopeSession, FakeOverrideTypeCalculator.DoNothing)
     }
+
+    abstract fun createSnapshot(): ImplicitReceiverValue<S>
 }
 
 private fun receiverExpression(symbol: FirBasedSymbol<*>, type: ConeKotlinType): FirThisReceiverExpression =
@@ -129,27 +133,42 @@ class ImplicitDispatchReceiverValue internal constructor(
     boundSymbol: FirClassSymbol<*>,
     type: ConeKotlinType,
     useSiteSession: FirSession,
-    scopeSession: ScopeSession
-) : ImplicitReceiverValue<FirClassSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession) {
+    scopeSession: ScopeSession,
+    mutable: Boolean = true,
+) : ImplicitReceiverValue<FirClassSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession, mutable) {
     internal constructor(
         boundSymbol: FirClassSymbol<*>, useSiteSession: FirSession, scopeSession: ScopeSession
     ) : this(
         boundSymbol, boundSymbol.constructType(typeArguments = emptyArray(), isNullable = false),
         useSiteSession, scopeSession
     )
+
+    override fun createSnapshot(): ImplicitReceiverValue<FirClassSymbol<*>> {
+        return ImplicitDispatchReceiverValue(boundSymbol, type, useSiteSession, scopeSession, false)
+    }
 }
 
 class ImplicitExtensionReceiverValue(
     boundSymbol: FirCallableSymbol<*>,
     type: ConeKotlinType,
     useSiteSession: FirSession,
-    scopeSession: ScopeSession
-) : ImplicitReceiverValue<FirCallableSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession)
+    scopeSession: ScopeSession,
+    mutable: Boolean = true,
+) : ImplicitReceiverValue<FirCallableSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession, mutable) {
+    override fun createSnapshot(): ImplicitReceiverValue<FirCallableSymbol<*>> {
+        return ImplicitExtensionReceiverValue(boundSymbol, type, useSiteSession, scopeSession, false)
+    }
+}
 
 
 class InaccessibleImplicitReceiverValue(
     boundSymbol: FirClassSymbol<*>,
     type: ConeKotlinType,
     useSiteSession: FirSession,
-    scopeSession: ScopeSession
-) : ImplicitReceiverValue<FirClassSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession)
+    scopeSession: ScopeSession,
+    mutable: Boolean = true,
+) : ImplicitReceiverValue<FirClassSymbol<*>>(boundSymbol, type, useSiteSession, scopeSession, mutable) {
+    override fun createSnapshot(): ImplicitReceiverValue<FirClassSymbol<*>> {
+        return InaccessibleImplicitReceiverValue(boundSymbol, type, useSiteSession, scopeSession, false)
+    }
+}
