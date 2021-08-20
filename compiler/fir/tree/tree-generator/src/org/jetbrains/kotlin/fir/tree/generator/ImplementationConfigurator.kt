@@ -58,6 +58,12 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
                 withGetter = true
             }
 
+            default("resolvedClassId") {
+                delegate = "relativeClassName"
+                delegateCall = "let { ClassId(packageFqName, it, false) }"
+                withGetter = true
+            }
+
             default("importedName") {
                 delegate = "importedFqName"
                 delegateCall = "shortName()"

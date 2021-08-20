@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.idea.frontend.api.fir.scopes
 import org.jetbrains.kotlin.fir.scopes.impl.FirAbstractSimpleImportingScope
 import org.jetbrains.kotlin.fir.scopes.impl.FirDefaultSimpleImportingScope
 import org.jetbrains.kotlin.idea.frontend.api.ValidityTokenOwner
-import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
 import org.jetbrains.kotlin.idea.frontend.api.fir.KtSymbolByFirBuilder
 import org.jetbrains.kotlin.idea.frontend.api.fir.utils.cached
 import org.jetbrains.kotlin.idea.frontend.api.fir.utils.weakRef
@@ -18,6 +17,7 @@ import org.jetbrains.kotlin.idea.frontend.api.scopes.NonStarImport
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtCallableSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtClassifierSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtConstructorSymbol
+import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
 import org.jetbrains.kotlin.idea.frontend.api.withValidityAssertion
 import org.jetbrains.kotlin.name.Name
 
@@ -35,8 +35,8 @@ internal class KtFirNonStarImportingScope(
                 imports.forEach { import ->
                     NonStarImport(
                         import.packageFqName,
-                        import.relativeParentClassName,
-                        import.resolvedParentClassId,
+                        import.relativeClassName,
+                        import.resolvedClassId,
                         import.importedName
                     ).let(::add)
                 }

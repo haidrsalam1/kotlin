@@ -59,32 +59,35 @@ open class FirImportResolveTransformer protected constructor(
         if (!fqName.isAcceptable) return import
 
         if (import.isAllUnder) {
-            return transformImportForFqName(fqName, import)
+            return transformImportForFqName(fqName, null, import)
         }
 
         val parentFqName = fqName.parent()
         currentFile?.let {
             session.lookupTracker?.recordLookup(fqName.shortName(), parentFqName.asString(), import.source, it.source)
         }
-        return transformImportForFqName(parentFqName, import)
+        return transformImportForFqName(parentFqName, fqName, import)
     }
 
     protected open val FqName.isAcceptable: Boolean
         get() = true
 
-    private fun transformImportForFqName(fqName: FqName, delegate: FirImport): FirImport {
-        val (packageFqName, relativeClassFqName, classSymbol) = resolveToPackageOrClass(symbolProvider, fqName) ?: return delegate
-        val firClass = classSymbol?.fir as? FirRegularClass
-        if (delegate.isAllUnder && firClass?.classKind?.isSingleton == true) {
+    private fun transformImportForFqName(parentFqName: FqName, fqName: FqName?, delegate: FirImport): FirImport {
+        val (packageFqName, relativeParentClassFqName, parentClassSymbol) = resolveToPackageOrClass(symbolProvider, parentFqName)
+            ?: return delegate
+        val firParentClass = parentClassSymbol?.fir as? FirRegularClass
+        if (delegate.isAllUnder && firParentClass?.classKind?.isSingleton == true) {
             return buildErrorImport {
                 this.delegate = delegate
-                this.diagnostic = ConeImportFromSingleton(firClass.name)
+                this.diagnostic = ConeImportFromSingleton(firParentClass.name)
             }
         }
+        val resolvedPackageOrClass = fqName?.let { resolveToPackageOrClass(symbolProvider, it) }
         return buildResolvedImport {
             this.delegate = delegate
             this.packageFqName = packageFqName
-            this.relativeParentClassName = relativeClassFqName
+            this.relativeParentClassName = relativeParentClassFqName
+            this.relativeClassName = resolvedPackageOrClass?.relativeClassFqName
         }
     }
 }

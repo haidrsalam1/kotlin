@@ -26,12 +26,14 @@ class FirResolvedImportBuilder {
     lateinit var delegate: FirImport
     lateinit var packageFqName: FqName
     var relativeParentClassName: FqName? = null
+    var relativeClassName: FqName? = null
 
     fun build(): FirResolvedImport {
         return FirResolvedImportImpl(
             delegate,
             packageFqName,
             relativeParentClassName,
+            relativeClassName,
         )
     }
 

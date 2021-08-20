@@ -28,6 +28,8 @@ abstract class FirResolvedImport : FirPureAbstractElement(), FirImport {
     abstract val packageFqName: FqName
     abstract val relativeParentClassName: FqName?
     abstract val resolvedParentClassId: ClassId?
+    abstract val relativeClassName: FqName?
+    abstract val resolvedClassId: ClassId?
     abstract val importedName: Name?
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R = visitor.visitResolvedImport(this, data)
