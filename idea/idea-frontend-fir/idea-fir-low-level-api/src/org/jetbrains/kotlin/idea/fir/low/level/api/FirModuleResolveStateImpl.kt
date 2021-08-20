@@ -96,13 +96,10 @@ internal class FirModuleResolveStateImpl(
      */
     private fun findSourceFirDeclarationByExpression(ktDeclaration: KtExpression): FirDeclaration {
         val moduleInfo = ktDeclaration.getModuleInfo() as? ModuleSourceInfoBase
-        require(moduleInfo != null) {
-            "Declaration should have ModuleSourceInfo, instead it had ${ktDeclaration.getModuleInfo()}"
-        }
         val nonLocalNamedDeclaration = ktDeclaration.getNonLocalContainingOrThisDeclaration()
             ?: error("Declaration should have non-local container${ktDeclaration.getElementTextInContext()}")
 
-        if (ktDeclaration == nonLocalNamedDeclaration) {
+        if (ktDeclaration == nonLocalNamedDeclaration && moduleInfo != null) {
             return nonLocalNamedDeclaration.findSourceNonLocalFirDeclaration(
                 firFileBuilder = firFileBuilder,
                 firSymbolProvider = rootModuleSession.firIdeProvider.symbolProvider,
