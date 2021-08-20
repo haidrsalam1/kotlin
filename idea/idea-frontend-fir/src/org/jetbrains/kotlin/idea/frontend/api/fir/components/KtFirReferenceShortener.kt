@@ -25,6 +25,8 @@ import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeAmbiguityError
+import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnmatchedTypeArgumentsError
+import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeWrongNumberOfTypeArgumentsError
 import org.jetbrains.kotlin.fir.resolve.symbolProvider
 import org.jetbrains.kotlin.fir.resolve.transformers.resolveToPackageOrClass
 import org.jetbrains.kotlin.fir.scopes.FirScope
@@ -34,10 +36,7 @@ import org.jetbrains.kotlin.fir.scopes.impl.*
 import org.jetbrains.kotlin.fir.scopes.processClassifiersByName
 import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.impl.*
-import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
-import org.jetbrains.kotlin.fir.types.FirTypeRef
-import org.jetbrains.kotlin.fir.types.classId
-import org.jetbrains.kotlin.fir.types.lowerBoundIfFlexible
+import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
 import org.jetbrains.kotlin.idea.fir.low.level.api.api.FirModuleResolveState
 import org.jetbrains.kotlin.idea.fir.low.level.api.api.LowLevelFirApiFacadeForResolveOnAir
@@ -59,6 +58,7 @@ import org.jetbrains.kotlin.psi.psiUtil.createSmartPointer
 import org.jetbrains.kotlin.psi.psiUtil.getQualifiedExpressionForSelector
 import org.jetbrains.kotlin.psi.psiUtil.unwrapNullability
 import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
 internal class KtFirReferenceShortener(
     override val analysisSession: KtFirAnalysisSession,
@@ -304,6 +304,10 @@ private class ElementsToShortenCollector(
         element.acceptChildren(this)
     }
 
+    override fun visitErrorTypeRef(errorTypeRef: FirErrorTypeRef) {
+        visitResolvedTypeRef(errorTypeRef)
+    }
+
     override fun visitResolvedTypeRef(resolvedTypeRef: FirResolvedTypeRef) {
         processTypeRef(resolvedTypeRef)
 
@@ -333,13 +337,26 @@ private class ElementsToShortenCollector(
         val wholeTypeReference = resolvedTypeRef.psi as? KtTypeReference ?: return
         if (!wholeTypeReference.textRange.intersects(selection)) return
 
-        val wholeClassifierId = resolvedTypeRef.type.lowerBoundIfFlexible().classId ?: return
+        val wholeClassifierId = resolvedTypeRef.type.lowerBoundIfFlexible().candidateClassId ?: return
         val wholeTypeElement = wholeTypeReference.typeElement?.unwrapNullability() as? KtUserType ?: return
 
         if (wholeTypeElement.qualifier == null) return
 
         findTypeToShorten(wholeClassifierId, wholeTypeElement)?.let(::addElementToShorten)
     }
+
+    val ConeKotlinType.candidateClassId: ClassId?
+        get() {
+            return when (this) {
+                is ConeClassErrorType -> when (val diagnostic = this.diagnostic) {
+                    // Tolerate code that misses type parameters while shortening it.
+                    is ConeUnmatchedTypeArgumentsError -> diagnostic.symbol.classId
+                    else -> null
+                }
+                is ConeClassLikeType -> lookupTag.classId
+                else -> null
+            }
+        }
 
     private fun findTypeToShorten(wholeClassifierId: ClassId, wholeTypeElement: KtUserType): ElementToShorten? {
         val positionScopes = shorteningContext.findScopesAtPosition(wholeTypeElement, namesToImport, towerContextProvider) ?: return null
