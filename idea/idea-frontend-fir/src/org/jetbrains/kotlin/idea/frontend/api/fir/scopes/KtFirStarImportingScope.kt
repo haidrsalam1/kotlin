@@ -43,8 +43,8 @@ internal class KtFirStarImportingScope(
         firScope.starImports.map { import ->
             StarImport(
                 import.packageFqName,
-                import.relativeClassName,
-                import.resolvedClassId
+                import.relativeParentClassName,
+                import.resolvedParentClassId
             )
         }
     }

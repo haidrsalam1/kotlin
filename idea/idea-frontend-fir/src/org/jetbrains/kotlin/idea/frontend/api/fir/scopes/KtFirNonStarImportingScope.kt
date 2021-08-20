@@ -35,8 +35,8 @@ internal class KtFirNonStarImportingScope(
                 imports.forEach { import ->
                     NonStarImport(
                         import.packageFqName,
-                        import.relativeClassName,
-                        import.resolvedClassId,
+                        import.relativeParentClassName,
+                        import.resolvedParentClassId,
                         import.importedName
                     ).let(::add)
                 }
