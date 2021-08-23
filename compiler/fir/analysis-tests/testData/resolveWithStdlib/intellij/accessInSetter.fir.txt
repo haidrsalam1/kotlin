@@ -1,19 +1,8 @@
 FILE: accessInSetter.kt
-    public final class DrawableGrid : R|kotlin/Any| {
+    public final class DrawableGrid : R|javax/swing/JList<kotlin/String>| {
         public constructor(): R|DrawableGrid| {
-            super<R|kotlin/Any|>()
+            super<R|javax/swing/JList<kotlin/String>|>()
         }
-
-        public final fun clearSelection(): R|kotlin/Unit| {
-        }
-
-        public final var selectedIndex: R|kotlin/Int| = Int(0)
-            public get(): R|kotlin/Int|
-            public set(value: R|kotlin/Int|): R|kotlin/Unit|
-
-        public final var isEnabled: R|kotlin/Boolean| = Boolean(false)
-            public get(): R|kotlin/Boolean|
-            public set(value: R|kotlin/Boolean|): R|kotlin/Unit|
 
     }
     public final class My : R|kotlin/Any| {
@@ -28,20 +17,28 @@ FILE: accessInSetter.kt
             private get(): R|kotlin/Boolean|
             private set(value: R|kotlin/Boolean|): R|kotlin/Unit| {
                 this@R|/My|.F|/My.useAll| = R|<local>/value|
-                this@R|/My|.R|/My.drawableGrid|.R|/DrawableGrid.isEnabled| = R|<local>/value|.R|kotlin/Boolean.not|()
+                this@R|/My|.R|/My.drawableGrid|.R|java/awt/Component.isEnabled| = R|<local>/value|.R|kotlin/Boolean.not|()
                 when () {
                     R|<local>/value| ->  {
-                        this@R|/My|.R|/My.drawableGrid|.R|/DrawableGrid.clearSelection|()
+                        this@R|/My|.R|/My.drawableGrid|.R|javax/swing/JList.clearSelection|()
                     }
                     else ->  {
-                        this@R|/My|.R|/My.drawableGrid|.R|/DrawableGrid.selectedIndex| = Int(0)
+                        this@R|/My|.R|/My.drawableGrid|.R|javax/swing/JList.selectedIndex| = Int(0)
                     }
                 }
 
             }
 
         private final fun createDrawableGrid(): R|DrawableGrid| {
-            ^createDrawableGrid R|/DrawableGrid.DrawableGrid|()
+            ^createDrawableGrid R|/DrawableGrid.DrawableGrid|().R|kotlin/apply|<R|DrawableGrid|>(<L> = apply@fun R|DrawableGrid|.<anonymous>(): R|kotlin/Unit| <inline=Inline, kind=EXACTLY_ONCE>  {
+                this@R|special/anonymous|.R|javax/swing/JComponent.isOpaque| = Boolean(false)
+                this@R|special/anonymous|.R|javax/swing/JList.visibleRowCount| = Int(3)
+                this@R|special/anonymous|.R|javax/swing/JList.addListSelectionListener|(<L> = addListSelectionListener@fun <anonymous>(<unused var>: R|ft<javax/swing/event/ListSelectionEvent, javax/swing/event/ListSelectionEvent?>|): R|kotlin/Unit| <inline=NoInline>  {
+                    ^@addListSelectionListener Unit
+                }
+                )
+            }
+            )
         }
 
     }

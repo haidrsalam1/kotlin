@@ -1,10 +1,8 @@
-class DrawableGrid {
-    fun clearSelection() {}
+// FULL_JDK
 
-    var selectedIndex = 0
+import javax.swing.JList
 
-    var isEnabled = false
-}
+class DrawableGrid : JList<String>()
 
 class My {
     private val drawableGrid = createDrawableGrid()
@@ -16,5 +14,10 @@ class My {
             if (value) drawableGrid.clearSelection() else drawableGrid.selectedIndex = 0
         }
 
-    private fun createDrawableGrid(): DrawableGrid = DrawableGrid()
+    private fun createDrawableGrid() = DrawableGrid().apply {
+        isOpaque = false
+        visibleRowCount = 3
+        addListSelectionListener { _ ->
+        }
+    }
 }
