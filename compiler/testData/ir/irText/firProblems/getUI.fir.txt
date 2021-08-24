@@ -32,8 +32,8 @@ FILE fqName:<root> fileName:/getUI.kt
         BLOCK_BODY
           VAR name:ui type:javax.swing.plaf.basic.BasicTreeUI [val]
             TYPE_OP type=javax.swing.plaf.basic.BasicTreeUI origin=CAST typeOperand=javax.swing.plaf.basic.BasicTreeUI
-              GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:ui type:@[FlexibleNullability] javax.swing.plaf.ComponentUI? visibility:protected/*protected and package*/' type=@[FlexibleNullability] javax.swing.plaf.ComponentUI? origin=GET_PROPERTY
-                receiver: GET_VAR 'tree: javax.swing.JTree declared in <root>.TreeCellRendererImpl.PanelRenderer.getLeftOffset' type=javax.swing.JTree origin=null
+              CALL 'public open fun getUI (): @[FlexibleNullability] javax.swing.plaf.TreeUI? declared in javax.swing.JTree' type=@[FlexibleNullability] javax.swing.plaf.TreeUI? origin=GET_PROPERTY
+                $this: GET_VAR 'tree: javax.swing.JTree declared in <root>.TreeCellRendererImpl.PanelRenderer.getLeftOffset' type=javax.swing.JTree origin=null
           RETURN type=kotlin.Nothing from='private final fun getLeftOffset (tree: javax.swing.JTree): kotlin.Int declared in <root>.TreeCellRendererImpl.PanelRenderer'
             CALL 'public open fun getLeftChildIndent (): kotlin.Int declared in javax.swing.plaf.basic.BasicTreeUI' type=kotlin.Int origin=GET_PROPERTY
               $this: GET_VAR 'val ui: javax.swing.plaf.basic.BasicTreeUI [val] declared in <root>.TreeCellRendererImpl.PanelRenderer.getLeftOffset' type=javax.swing.plaf.basic.BasicTreeUI origin=null

@@ -17,7 +17,7 @@ class TreeCellRendererImpl : TreeCellRenderer {
     }
 
     private fun getLeftOffset(tree: JTree): Int {
-      val ui: BasicTreeUI = tree.#ui as BasicTreeUI
+      val ui: BasicTreeUI = tree.getUI() as BasicTreeUI
       return ui.getLeftChildIndent()
     }
 
