@@ -1,0 +1,26 @@
+class TreeCellRendererImpl : TreeCellRenderer {
+  constructor() /* primary */ {
+    super/*Any*/()
+    /* <init>() */
+
+  }
+
+  override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
+    return PanelRenderer()
+  }
+
+  private class PanelRenderer : JPanel {
+    constructor() /* primary */ {
+      super/*JPanel*/(p0 = BorderLayout())
+      /* <init>() */
+
+    }
+
+    private fun getLeftOffset(tree: JTree): Int {
+      val ui: BasicTreeUI = tree.getUI() as BasicTreeUI
+      return ui.getLeftChildIndent()
+    }
+
+  }
+
+}

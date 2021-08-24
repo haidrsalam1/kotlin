@@ -16041,6 +16041,12 @@ public class FirBlackBoxCodegenTestGenerated extends AbstractFirBlackBoxCodegenT
         }
 
         @Test
+        @TestMetadata("getUI.kt")
+        public void testGetUI() throws Exception {
+            runTest("compiler/testData/codegen/box/fir/getUI.kt");
+        }
+
+        @Test
         @TestMetadata("implicitNothingInDelegate.kt")
         public void testImplicitNothingInDelegate() throws Exception {
             runTest("compiler/testData/codegen/box/fir/implicitNothingInDelegate.kt");
