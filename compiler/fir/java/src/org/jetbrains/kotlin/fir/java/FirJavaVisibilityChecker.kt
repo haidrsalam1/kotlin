@@ -12,6 +12,8 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.resolve.calls.ReceiverValue
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 
 @NoMutableState
 object FirJavaVisibilityChecker : FirVisibilityChecker() {
@@ -29,7 +31,10 @@ object FirJavaVisibilityChecker : FirVisibilityChecker() {
                     true
                 } else {
                     val ownerId = symbol.getOwnerId()
-                    ownerId != null && canSeeProtectedMemberOf(containingDeclarations, dispatchReceiver, ownerId, session)
+                    ownerId != null && canSeeProtectedMemberOf(
+                        containingDeclarations, dispatchReceiver, ownerId, session,
+                        isNonConstructorCallable = symbol is FirCallableSymbol && symbol !is FirConstructorSymbol
+                    )
                 }
             }
 
