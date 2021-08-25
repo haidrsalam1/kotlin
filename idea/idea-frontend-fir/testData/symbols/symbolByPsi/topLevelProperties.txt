@@ -34,6 +34,7 @@ KtFirPropertyGetterSymbol:
   callableIdIfNonLocal: null
   dispatchType: null
   hasBody: true
+  hasStableParameterNames: true
   isDefault: false
   isExtension: false
   isInline: false
@@ -42,6 +43,7 @@ KtFirPropertyGetterSymbol:
   origin: SOURCE
   receiverType: null
   symbolKind: ACCESSOR
+  valueParameters: []
   visibility: Public
   deprecationStatus: null
 

@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirFieldImpl
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
+import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticPropertyAccessor
 import org.jetbrains.kotlin.fir.java.declarations.FirJavaField
 import org.jetbrains.kotlin.fir.resolve.calls.originalConstructorIfTypeAlias
 import org.jetbrains.kotlin.fir.resolve.getSymbolByLookupTag
@@ -200,6 +201,7 @@ internal class KtSymbolByFirBuilder private constructor(
                 }
                 is FirConstructor -> buildConstructorSymbol(fir)
                 is FirAnonymousFunction -> buildAnonymousFunctionSymbol(fir)
+                is FirSyntheticPropertyAccessor -> buildSyntheticPropertyAccessorSymbol(fir)
                 else -> throwUnexpectedElementError(fir)
             }
         }
@@ -223,6 +225,16 @@ internal class KtSymbolByFirBuilder private constructor(
         fun buildSamConstructorSymbol(fir: FirSimpleFunction): KtFirSamConstructorSymbol {
             check(fir.origin == FirDeclarationOrigin.SamConstructor)
             return symbolsCache.cache(fir) { KtFirSamConstructorSymbol(fir, resolveState, token, this@KtSymbolByFirBuilder) }
+        }
+
+        fun buildSyntheticPropertyAccessorSymbol(fir: FirSyntheticPropertyAccessor): KtFunctionLikeSymbol {
+            return symbolsCache.cache(fir) {
+                if (fir.isGetter) {
+                    KtFirPropertyGetterSymbol(fir, resolveState, token, this@KtSymbolByFirBuilder)
+                } else {
+                    KtFirPropertySetterSymbol(fir, resolveState, token, this@KtSymbolByFirBuilder)
+                }
+            }
         }
     }
 

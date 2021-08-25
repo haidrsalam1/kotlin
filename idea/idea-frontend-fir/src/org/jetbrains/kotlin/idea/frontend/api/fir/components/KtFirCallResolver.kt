@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.FirSuperReference
 import org.jetbrains.kotlin.fir.references.impl.FirSimpleNamedReference
 import org.jetbrains.kotlin.fir.resolve.calls.FirErrorReferenceWithCandidate
+import org.jetbrains.kotlin.fir.resolve.calls.FirSyntheticPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinErrorType
@@ -36,8 +37,10 @@ import org.jetbrains.kotlin.idea.frontend.api.symbols.markers.KtSymbolWithMember
 import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
 import org.jetbrains.kotlin.idea.frontend.api.withValidityAssertion
 import org.jetbrains.kotlin.idea.references.FirReferenceResolveHelper
+import org.jetbrains.kotlin.idea.references.readWriteAccess
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.findAssignment
 import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
@@ -46,6 +49,31 @@ internal class KtFirCallResolver(
     override val token: ValidityToken,
 ) : KtCallResolver(), KtFirAnalysisSessionComponent {
     private val diagnosticCache = mutableListOf<FirDiagnostic>()
+
+    override fun resolveAccessorCall(call: KtSimpleNameExpression): KtCall? = withValidityAssertion {
+        when (val fir = call.getOrBuildFir(firResolveState)) {
+            is FirResolvedNamedReference -> {
+                val syntheticPropertySymbol = fir.resolvedSymbol as? FirSyntheticPropertySymbol ?: return null
+                val access = call.readWriteAccess(useResolveForReadWrite = false)
+                val setterValue = findAssignment(call)?.right
+                val accessor = when {
+                    access.isWrite && setterValue != null ->
+                        syntheticPropertySymbol.setterSymbol?.fir
+                    access.isRead ->
+                        syntheticPropertySymbol.getterSymbol?.fir
+                    else -> null
+                } ?: return null
+                val target = KtSuccessCallTarget(analysisSession.firSymbolBuilder.functionLikeBuilder.buildFunctionLikeSymbol(accessor))
+                val ktArgumentMapping = LinkedHashMap<KtExpression, KtValueParameterSymbol>()
+                if (access.isWrite && setterValue != null) {
+                    val setterParameterSymbol = accessor.valueParameters.single().buildSymbol(firSymbolBuilder) as KtValueParameterSymbol
+                    ktArgumentMapping[setterValue] = setterParameterSymbol
+                }
+                return KtFunctionCall(ktArgumentMapping, target)
+            }
+            else -> return null
+        }
+    }
 
     override fun resolveCall(call: KtBinaryExpression): KtCall? = withValidityAssertion {
         when (val fir = call.getOrBuildFir(firResolveState)) {

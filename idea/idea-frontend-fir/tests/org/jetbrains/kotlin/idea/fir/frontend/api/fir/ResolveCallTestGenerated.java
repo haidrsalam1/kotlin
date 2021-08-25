@@ -121,6 +121,24 @@ public class ResolveCallTestGenerated extends AbstractResolveCallTest {
     }
 
     @Test
+    @TestMetadata("javaPropertyGetter.kt")
+    public void testJavaPropertyGetter() throws Exception {
+        runTest("idea/idea-frontend-fir/testData/analysisSession/resolveCall/javaPropertyGetter.kt");
+    }
+
+    @Test
+    @TestMetadata("javaPropertyNestedGetter.kt")
+    public void testJavaPropertyNestedGetter() throws Exception {
+        runTest("idea/idea-frontend-fir/testData/analysisSession/resolveCall/javaPropertyNestedGetter.kt");
+    }
+
+    @Test
+    @TestMetadata("javaPropertySetter.kt")
+    public void testJavaPropertySetter() throws Exception {
+        runTest("idea/idea-frontend-fir/testData/analysisSession/resolveCall/javaPropertySetter.kt");
+    }
+
+    @Test
     @TestMetadata("resolveCallInSuperConstructorParam.kt")
     public void testResolveCallInSuperConstructorParam() throws Exception {
         runTest("idea/idea-frontend-fir/testData/analysisSession/resolveCall/resolveCallInSuperConstructorParam.kt");
