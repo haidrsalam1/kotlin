@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.typeContext
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
 import org.jetbrains.kotlin.fir.types.impl.ConeTypeParameterTypeImpl
+import org.jetbrains.kotlin.idea.fir.low.level.api.api.LowLevelFirApiFacadeForResolveOnAir.getTowerContextProvider
 import org.jetbrains.kotlin.idea.fir.low.level.api.api.getOrBuildFir
 import org.jetbrains.kotlin.idea.fir.low.level.api.api.throwUnexpectedFirElementError
 import org.jetbrains.kotlin.idea.frontend.api.components.KtBuiltinTypes
@@ -31,6 +32,7 @@ import org.jetbrains.kotlin.idea.frontend.api.types.KtTypeNullability
 import org.jetbrains.kotlin.idea.frontend.api.withValidityAssertion
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtDoubleColonExpression
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtTypeReference
 
 internal class KtFirTypeProvider(
@@ -102,6 +104,11 @@ internal class KtFirTypeProvider(
             a.coneType,
             b.coneType
         ) == ConeTypeCompatibilityChecker.Compatibility.COMPATIBLE
+    }
+
+    override fun getImplicitReceiverTypesAtPosition(position: KtElement): List<KtType> {
+        return analysisSession.firResolveState.getTowerContextProvider()
+            .getClosestAvailableParentContext(position)?.implicitReceiverStack?.map { it.type.asKtType() } ?: emptyList()
     }
 }
 

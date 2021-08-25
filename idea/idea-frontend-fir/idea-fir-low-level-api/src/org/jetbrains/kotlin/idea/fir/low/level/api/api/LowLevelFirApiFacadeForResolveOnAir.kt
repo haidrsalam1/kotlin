@@ -100,11 +100,15 @@ object LowLevelFirApiFacadeForResolveOnAir {
         state: FirModuleResolveState,
         place: KtElement,
     ): FirTowerContextProvider {
-        require(state is FirModuleResolveStateImpl)
+        val originalState = when (state) {
+            is FirModuleResolveStateDepended -> state.originalState
+            is FirModuleResolveStateImpl -> state
+            else -> throw IllegalStateException("unknown FirModuleResolveState $state")
+        }
         require(place.isPhysical)
 
         return if (place is KtFile) {
-            FileTowerProvider(place, onAirGetTowerContextForFile(state, place))
+            FileTowerProvider(place, onAirGetTowerContextForFile(originalState, place))
         } else {
             val validPlace = PsiTreeUtil.findFirstParent(place, false) {
                 RawFirReplacement.isApplicableForReplacement(it as KtElement)
@@ -112,7 +116,7 @@ object LowLevelFirApiFacadeForResolveOnAir {
 
             FirTowerDataContextAllElementsCollector().also {
                 runBodyResolveOnAir(
-                    state = state,
+                    state = originalState,
                     collector = it,
                     onAirCreatedDeclaration = false,
                     replacement = RawFirReplacement(validPlace, validPlace),

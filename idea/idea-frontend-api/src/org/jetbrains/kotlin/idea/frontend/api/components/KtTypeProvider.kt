@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.idea.frontend.api.types.KtFlexibleType
 import org.jetbrains.kotlin.idea.frontend.api.types.KtType
 import org.jetbrains.kotlin.idea.frontend.api.types.KtTypeNullability
 import org.jetbrains.kotlin.psi.KtDoubleColonExpression
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtTypeReference
 
 public abstract class KtTypeProvider : KtAnalysisSessionComponent() {
@@ -29,6 +30,8 @@ public abstract class KtTypeProvider : KtAnalysisSessionComponent() {
     public abstract fun withNullability(type: KtType, newNullability: KtTypeNullability): KtType
 
     public abstract fun haveCommonSubtype(a: KtType, b: KtType): Boolean
+
+    public abstract fun getImplicitReceiverTypesAtPosition(position: KtElement): List<KtType>
 }
 
 public interface KtTypeProviderMixIn : KtAnalysisSessionMixIn {
@@ -81,6 +84,9 @@ public interface KtTypeProviderMixIn : KtAnalysisSessionMixIn {
 
     /** Check whether this type is compatible with that type. If they are compatible, it means they can have a common subtype. */
     public fun KtType.hasCommonSubTypeWith(that: KtType): Boolean = analysisSession.typeProvider.haveCommonSubtype(this, that)
+
+    public fun getImplicitReceiverTypesAtPosition(position: KtElement): List<KtType> =
+        analysisSession.typeProvider.getImplicitReceiverTypesAtPosition(position)
 }
 
 @Suppress("PropertyName")
