@@ -60,9 +60,15 @@ kotlin.native.binary.memoryModel=experimental
 ```
 to `gradle.properties`.
 
-To fully take advantage of the new MM newer versions of certain library should be used. For example (**TODO**: update versions):
+To fully take advantage of the new MM newer versions of certain library should be used. For example (**TODO**: update versions and features):
 * `kotlinx.coroutines`: `1.5.1-new-mm-dev1`
+  * No freezing, every common primitive (Channels, Flows, coroutines) work through worker boundaries.
+  * `Dispatchers.Default` is backed by a separate worker.
+  * `newSingleThreadContext` to create coroutine dispatcher backed by a worker.
+  * `Dispatchers.Main` backed by main queue on Darwin and by standalone worker on other platforms. **NOTE**: Don't use `Dispatchers.Main`
+     in unit-tests, because nothing is processing the main thread queue in unit-tests.
 * `ktor`: **TODO**
+
 Older versions (including `native-mt` for `kotlinx.coroutines`) could still be used, and will work just like with the previous MM.
 
 ## Performance issues
