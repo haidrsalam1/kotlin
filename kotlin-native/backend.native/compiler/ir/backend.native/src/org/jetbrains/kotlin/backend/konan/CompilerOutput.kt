@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.backend.common.serialization.KlibIrVersion
 import org.jetbrains.kotlin.backend.common.serialization.metadata.KlibMetadataVersion
 import org.jetbrains.kotlin.backend.konan.llvm.*
 import org.jetbrains.kotlin.backend.konan.llvm.objc.linkObjC
+import org.jetbrains.kotlin.js.parser.parse
 import org.jetbrains.kotlin.konan.CURRENT
 import org.jetbrains.kotlin.konan.CompilerVersion
 import org.jetbrains.kotlin.konan.file.isBitcode
@@ -185,6 +186,9 @@ internal fun produceOutput(context: Context) {
 
 private fun parseAndLinkBitcodeFile(context: Context, llvmModule: LLVMModuleRef, path: String) {
     val parsedModule = parseBitcodeFile(path)
+    if (!context.shouldUseDebugInfoFromNativeLibs()) {
+        LLVMStripModuleDebugInfo(parsedModule)
+    }
     val failed = llvmLinkModules2(context, llvmModule, parsedModule)
     if (failed != 0) {
         throw Error("failed to link $path") // TODO: retrieve error message from LLVM.
