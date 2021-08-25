@@ -30,11 +30,30 @@ Together with the new MM we are bringing in another set of changes:
 
 ## Enable the new MM
 
-Add compilation flag `-Xbinary=memoryModel=experimental`. In gradle you can instead do:
-```groovy
-projectWideBinaryOptions = ['memoryModel': 'experimental']
+Add compilation flag `-Xbinary=memoryModel=experimental`.
+
+Alternatively, with gradle you can add
+
+```kotlin
+kotlin.targets.withType(KotlinNativeTarget::class.java) {
+    binaries.all {
+        binaryOptions["memoryModel"] = "experimental"
+    }
+}
 ```
-**TODO**: What is the exact incantation?
+to `build.gradle.kts` if you're using kotlin DSL, or
+```groovy
+kotlin.targets.withType(KotlinNativeTarget) {
+    binaries.all {
+        binaryOptions["memoryModel"] = "experimental"
+    }
+}
+```
+to `build.gradle` if you're using groovy DSL, or even
+```properties
+kotlin.native.binary.memoryModel=experimental
+```
+to `gradle.properties`.
 
 Libraries supporting the new MM(**TODO**: update versions):
 * `kotlinx.coroutines`: `1.5.1-new-mm-dev1`
@@ -47,14 +66,25 @@ mark-and-sweep algorithm, which is triggered after enough functions and loop ite
 the performance. One of our top priorities is addressing these problems.
 
 We don't yet have nice instruments to monitor the GC performance, so for now diagnosing most of these problems requires looking at GC logs.
-To enable the logs we need to pass `-Xruntime-logs=gc=info` to the compiler. For example:
-```groovy
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinNativeCompile) {
-    kotlinOptions.freeCompilerArgs += ["-Xruntime-logs=gc=info"]
+To enable the logs we need to pass `-Xruntime-logs=gc=info` to the compiler. Or, in gradle:
+```kotlin
+kotlin.targets.withType(KotlinNativeTarget::class.java) {
+    binaries.all {
+        freeCompilerArgs += "-Xruntime-logs=gc=info"
+    }
 }
 ```
-**TODO**: What is the exact incantation?
-Currently, the logs are printed to stderr only. Also, the contents of the logs is subject to change.
+to `build.gradle.kts` in case of kotlin DSL, or
+```groovy
+kotlin.targets.withType(KotlinNativeTarget) {
+    binaries.all {
+        freeCompilerArgs += "-Xruntime-logs=gc=info"
+    }
+}
+```
+to `build.gradle` in case of groovy DSL.
+
+Currently, the logs are only printed to stderr. Also, the exact contents of the logs is subject to change.
 
 * Since the collector is single-threaded stop-the-world, the pause time of every thread linearly depends on the number of
   objects in the heap. The more objects that are kept alive, the longer pauses will be. Large pauses on the main thread
