@@ -191,6 +191,7 @@ internal object FirIdeSessionFactory {
         FirIdeLibrariesSession(project, searchScope, builtinTypes).apply session@{
             val mainModuleData = FirModuleInfoBasedModuleData(mainModuleInfo).apply { bindSession(this@session) }
 
+            registerModuleData(mainModuleData)
             registerIdeComponents(project)
             register(FirPhaseManager::class, FirPhaseCheckingPhaseManager)
             registerCommonComponents(languageVersionSettings)
@@ -292,6 +293,7 @@ internal object FirIdeSessionFactory {
             registerIdeComponents(project)
             register(FirPhaseManager::class, FirPhaseCheckingPhaseManager)
             registerCommonComponents(languageVersionSettings)
+            registerModuleData(moduleData)
 
             val kotlinScopeProvider = FirKotlinScopeProvider(::wrapScopeWithJvmMapped)
             val symbolProvider = FirCompositeSymbolProvider(
