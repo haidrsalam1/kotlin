@@ -151,6 +151,7 @@ private class PropertyReferenceDelegationTransformer(val context: JvmBackendCont
         getter?.apply { body = accessorBody(delegate, backingField ?: receiver?.inline(originalThis, dispatchReceiverParameter)) }
         setter?.apply { body = accessorBody(delegate, backingField ?: receiver?.inline(originalThis, dispatchReceiverParameter)) }
 
+        // The `$delegate` method is generated as instance method here, see MakePropertyDelegateMethodsStaticLowering.
         val delegateMethod = context.createSyntheticMethodForPropertyDelegate(this).apply {
             body = context.createJvmIrBuilder(symbol).run {
                 val propertyOwner = if (getter?.dispatchReceiverParameter != null) dispatchReceiverParameter else null

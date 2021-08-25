@@ -31,7 +31,7 @@ public final class C : kotlin/Any {
     public final set
 
   // getter: getWithOptimizedDelegate()D
-  // synthetic method for delegate: getWithOptimizedDelegate$delegate()Ljava/lang/Object;
+  // synthetic method for delegate: getWithOptimizedDelegate$delegate(LC;)Ljava/lang/Object;
   public final /* delegated */ val withOptimizedDelegate: kotlin/Double
     public final /* non-default */ get
 
