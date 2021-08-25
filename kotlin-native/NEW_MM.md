@@ -2,6 +2,8 @@
 
 ## Overview
 
+**NOTE**: The new MM is still in an experimental stage. It's not production-ready.
+
 In the new MM we are lifting restrictions placed on object sharing: there no need to freeze objects to share them
 between threads.
 
@@ -15,20 +17,23 @@ A few caveats:
 * As with the previous MM, memory is not reclaimed eagerly: an object is reclaimed only when GC happens. This extends
   to Swift/ObjC objects that crossed interop boundary into K/N.
 * `AtomicReference` from `kotlin.native.concurrent` still requires freezing the `value`. `FreezableAtomicReference`
-  can be used instead, or, alternatively, `AtomicRef` from `atomicfu` can be used.
+  can be used instead, or, alternatively, `AtomicRef` from `atomicfu` can be used (note, that the library has not reached 1.x yet).
 * `deinit` on Swift/ObjC objects (and the objects referred by them) will be called on a different thread if these objects
   cross interop boundary into K/N.
 * When calling Kotlin suspend functions from Swift, completion handlers might be called not on the main thread.
 
 Together with the new MM we are bringing in another set of changes:
 * Global properties are initialized lazily, when the file they are defined in is first accessed.
-  This is in line with K/JVM. Properties that must be initialized at the program start can be marked with `@EagerInitialization`.
+  This is in line with K/JVM. Properties that must be initialized at the program start can be marked with `@EagerInitialization`
+  (please, consult the docs for `@EagerInitialization` before using).
 * `by lazy {}` properties support thread safety modes and do not handle unbounded recursion. This is in line with K/JVM.
 * Exceptions escaping `operation` in `Worker.executeAfter` are processed like in other parts of the runtime:
   by trying to execute a user-defined unhandled exception hook, or terminating the program if the hook was not found or
   failed with exception itself.
 
 ## Enable the new MM
+
+**NOTE**: The new MM is still in an experimental stage. It's not production-ready.
 
 Add compilation flag `-Xbinary=memoryModel=experimental`.
 
@@ -55,15 +60,16 @@ kotlin.native.binary.memoryModel=experimental
 ```
 to `gradle.properties`.
 
-Libraries supporting the new MM(**TODO**: update versions):
+To fully take advantage of the new MM newer versions of certain library should be used. For example (**TODO**: update versions):
 * `kotlinx.coroutines`: `1.5.1-new-mm-dev1`
 * `ktor`: **TODO**
+Older versions (including `native-mt` for `kotlinx.coroutines`) could still be used, and will work just like with the previous MM.
 
 ## Performance issues
 
 For the first preview we are using the simplest scheme for garbage collection: single-threaded stop-the-world
 mark-and-sweep algorithm, which is triggered after enough functions and loop iterations were executed. This greatly hinders
-the performance. One of our top priorities is addressing these problems.
+the performance. One of our top priorities is addressing performance problems.
 
 We don't yet have nice instruments to monitor the GC performance, so for now diagnosing most of these problems requires looking at GC logs.
 To enable the logs we need to pass `-Xruntime-logs=gc=info` to the compiler. Or, in gradle:
@@ -86,6 +92,7 @@ to `build.gradle` in case of groovy DSL.
 
 Currently, the logs are only printed to stderr. Also, the exact contents of the logs is subject to change.
 
+A number of known performance issues:
 * Since the collector is single-threaded stop-the-world, the pause time of every thread linearly depends on the number of
   objects in the heap. The more objects that are kept alive, the longer pauses will be. Large pauses on the main thread
   can result in laggy UI event handling. Both the pause time and the amount of objects in the heap are printed to the logs for each
