@@ -9,7 +9,10 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.renderWithType
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
-import org.jetbrains.kotlin.idea.fir.low.level.api.api.*
+import org.jetbrains.kotlin.idea.fir.low.level.api.api.FirModuleResolveState
+import org.jetbrains.kotlin.idea.fir.low.level.api.api.getOrBuildFirFile
+import org.jetbrains.kotlin.idea.fir.low.level.api.api.getOrBuildFirOfType
+import org.jetbrains.kotlin.idea.fir.low.level.api.api.withFirDeclarationOfType
 import org.jetbrains.kotlin.idea.frontend.api.KtAnalysisSession
 import org.jetbrains.kotlin.idea.frontend.api.ValidityTokenOwner
 import org.jetbrains.kotlin.idea.frontend.api.fir.KtSymbolByFirBuilder
@@ -127,6 +130,12 @@ internal class KtFirSymbolProvider(
     override fun getPropertyAccessorSymbol(psi: KtPropertyAccessor): KtPropertyAccessorSymbol = withValidityAssertion {
         psi.withFirDeclarationOfType<FirPropertyAccessor, KtPropertyAccessorSymbol>(resolveState) {
             firSymbolBuilder.callableBuilder.buildPropertyAccessorSymbol(it)
+        }
+    }
+
+    override fun getClassInitializerSymbol(psi: KtClassInitializer): KtClassInitializerSymbol = withValidityAssertion {
+        psi.withFirDeclarationOfType<FirAnonymousInitializer, KtClassInitializerSymbol>(resolveState) {
+            firSymbolBuilder.anonymousInitializerBuilder.buildClassInitializer(it)
         }
     }
 
