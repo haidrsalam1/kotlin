@@ -9,8 +9,11 @@ import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.*
+import org.jetbrains.kotlin.fir.expressions.FirPropertyAccessExpression
+import org.jetbrains.kotlin.fir.references.FirSuperReference
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.calls.Candidate
+import org.jetbrains.kotlin.fir.resolve.calls.ExpressionReceiverValue
 import org.jetbrains.kotlin.fir.resolve.calls.FirSyntheticFunctionSymbol
 import org.jetbrains.kotlin.fir.resolve.calls.ReceiverValue
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
@@ -190,8 +193,15 @@ abstract class FirVisibilityChecker : FirSessionComponent {
         session: FirSession
     ): Boolean {
         if (dispatchReceiver == null) return true
-        // TODO: 'super' receiver case
-        return dispatchReceiver.type.fullyExpandedType(session).isSubtypeOfClass(containingUseSiteClass.classId, session)
+        var dispatchReceiverType = dispatchReceiver.type
+        if (dispatchReceiver is ExpressionReceiverValue) {
+            val explicitReceiver = dispatchReceiver.explicitReceiver
+            if (explicitReceiver is FirPropertyAccessExpression && explicitReceiver.calleeReference is FirSuperReference) {
+                // Special 'super' case: type of this, not of super, should be taken for the check below
+                dispatchReceiverType = explicitReceiver.dispatchReceiver.typeRef.coneType
+            }
+        }
+        return dispatchReceiverType.fullyExpandedType(session).isSubtypeOfClass(containingUseSiteClass.classId, session)
     }
 
     private fun ConeKotlinType.isSubtypeOfClass(ownerId: ClassId, session: FirSession): Boolean {
