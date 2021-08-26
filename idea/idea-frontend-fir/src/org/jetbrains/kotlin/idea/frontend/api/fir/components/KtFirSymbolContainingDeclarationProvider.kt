@@ -11,14 +11,17 @@ import org.jetbrains.kotlin.fir.FirRealSourceElementKind
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.psi
 import org.jetbrains.kotlin.idea.fir.low.level.api.util.parentOfType
-import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
 import org.jetbrains.kotlin.idea.frontend.api.components.KtSymbolContainingDeclarationProvider
 import org.jetbrains.kotlin.idea.frontend.api.fir.KtFirAnalysisSession
 import org.jetbrains.kotlin.idea.frontend.api.fir.symbols.KtFirSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.*
 import org.jetbrains.kotlin.idea.frontend.api.symbols.markers.KtSymbolKind
 import org.jetbrains.kotlin.idea.frontend.api.symbols.markers.KtSymbolWithKind
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtDestructuringDeclaration
+import org.jetbrains.kotlin.psi.KtPrimaryConstructor
+import org.jetbrains.kotlin.psi.KtProperty
 
 internal class KtFirSymbolContainingDeclarationProvider(
     override val analysisSession: KtFirAnalysisSession,
@@ -72,6 +75,7 @@ internal class KtFirSymbolContainingDeclarationProvider(
             FirFakeSourceElementKind.ImplicitConstructor ->
                 return source.psi as KtDeclaration
             FirFakeSourceElementKind.PropertyFromParameter -> return source.psi?.parentOfType<KtPrimaryConstructor>()!!
+            FirFakeSourceElementKind.DefaultAccessor -> return source.psi as KtProperty
             FirRealSourceElementKind -> source.psi!!
             else -> error("Unexpected FirSourceElement: kind=${source.kind} element=${source.psi!!::class.simpleName}")
         }
