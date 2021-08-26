@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
 import org.jetbrains.kotlin.fir.java.declarations.FirJavaField
 import org.jetbrains.kotlin.fir.resolve.calls.originalConstructorIfTypeAlias
 import org.jetbrains.kotlin.fir.resolve.getSymbolByLookupTag
+import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
 import org.jetbrains.kotlin.fir.resolve.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
@@ -35,6 +36,7 @@ import org.jetbrains.kotlin.idea.frontend.api.fir.types.*
 import org.jetbrains.kotlin.idea.frontend.api.fir.utils.weakRef
 import org.jetbrains.kotlin.idea.frontend.api.symbols.*
 import org.jetbrains.kotlin.idea.frontend.api.tokens.ValidityToken
+import org.jetbrains.kotlin.idea.frontend.api.types.KtSubstitutor
 import org.jetbrains.kotlin.idea.frontend.api.types.KtType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -367,6 +369,10 @@ internal class KtSymbolByFirBuilder private constructor(
             ProjectionKind.STAR -> error("KtStarProjectionTypeArgument should not be directly created")
         }
 
+        fun buildSubstitutor(substitutor: ConeSubstitutor): KtSubstitutor {
+            if (substitutor == ConeSubstitutor.Empty) return KtSubstitutor.Empty(token)
+            return KtFirSubstitutor(substitutor, this@KtSymbolByFirBuilder, token)
+        }
     }
 
     companion object {
