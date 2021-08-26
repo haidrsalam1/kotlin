@@ -147,10 +147,10 @@ private func assertAutoreleasepoolNotUsed(flags: TestFlags = TestFlags(), block:
     // So here we check that stack top after `block()` is the same as before.
     // Which means that no objects were added to this stack inbetween.
     if flags.checkAutorelease {
-      try assertEquals(actual: poolAfter, expected: poolBefore)
+        try assertEquals(actual: poolAfter, expected: poolBefore)
     } else {
       // Just to ensure we disable the hack once it is not needed anymore:
-      try assertFalse(poolAfter == poolBefore)
+        try assertFalse(poolAfter == poolBefore)
     }
 }
 
@@ -251,6 +251,9 @@ private func testReceiveSwiftObjectFromKotlin() throws {
 }
 
 private func testReceiveListFromKotlin() throws {
+    // Swift conversion from NSArray to Swift Array uses non-optimized autorelease in the implementation,
+    // So regardless of our efforts, passing List from Kotlin to Swift will use autoreleasepool.
+    // Use `checkAutorelease: false` flag to disable the relevant check.
     try testReceiveFromKotlin(flags: TestFlags(trackSwiftLifetime: false, checkAutorelease: false)) {
         $0.receiveList()
     }
@@ -319,6 +322,9 @@ private func testSendSwiftObjectToSwift() throws {
 }
 
 private func testSendListToSwift() throws {
+    // Swift conversion from NSArray to Swift Array uses non-optimized autorelease in the implementation,
+    // So regardless of our efforts, passing List from Kotlin to Swift will use autoreleasepool.
+    // Use `checkAutorelease: false` flag to disable the relevant check.
     try testCallToSwift(flags: TestFlags(trackSwiftLifetime: false, checkAutorelease: false)) {
         NoAutoreleaseKt.callSendList(helper: $0, tracker: $1)
     }
