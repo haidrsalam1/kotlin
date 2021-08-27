@@ -15,18 +15,19 @@ In particular:
 
 A few caveats:
 * As with the previous MM, memory is not reclaimed eagerly: an object is reclaimed only when GC happens. This extends
-  to Swift/ObjC objects that crossed interop boundary into K/N.
+  to Swift/ObjC objects that crossed interop boundary into Kotlin/Native.
 * `AtomicReference` from `kotlin.native.concurrent` still requires freezing the `value`. `FreezableAtomicReference`
   can be used instead, or, alternatively, `AtomicRef` from `atomicfu` can be used (note, that the library has not reached 1.x yet).
 * `deinit` on Swift/ObjC objects (and the objects referred by them) will be called on a different thread if these objects
-  cross interop boundary into K/N.
+  cross interop boundary into Kotlin/Native.
 * When calling Kotlin suspend functions from Swift, completion handlers might be called not on the main thread.
 
 Together with the new MM we are bringing in another set of changes:
-* Global properties are initialized lazily, when the file they are defined in is first accessed.
-  This is in line with K/JVM. Properties that must be initialized at the program start can be marked with `@EagerInitialization`
+* Global properties are initialized lazily, when the file they are defined in is first accessed. Previously global properties were
+  initialized at the program startup.
+  This is in line with Kotlin/JVM. Properties that must be initialized at the program start can be marked with `@EagerInitialization`
   (please, consult the docs for `@EagerInitialization` before using).
-* `by lazy {}` properties support thread safety modes and do not handle unbounded recursion. This is in line with K/JVM.
+* `by lazy {}` properties support thread safety modes and do not handle unbounded recursion. This is in line with Kotlin/JVM.
 * Exceptions escaping `operation` in `Worker.executeAfter` are processed like in other parts of the runtime:
   by trying to execute a user-defined unhandled exception hook, or terminating the program if the hook was not found or
   failed with exception itself.
@@ -38,7 +39,10 @@ Together with the new MM we are bringing in another set of changes:
 Add compilation flag `-Xbinary=memoryModel=experimental`.
 
 Alternatively, with gradle you can add
-
+```properties
+kotlin.native.binary.memoryModel=experimental
+```
+to `gradle.properties`, or
 ```kotlin
 kotlin.targets.withType(KotlinNativeTarget::class.java) {
     binaries.all {
@@ -54,27 +58,25 @@ kotlin.targets.withType(KotlinNativeTarget) {
     }
 }
 ```
-to `build.gradle` if you're using groovy DSL, or even
-```properties
-kotlin.native.binary.memoryModel=experimental
-```
-to `gradle.properties`.
+to `build.gradle` if you're using groovy DSL.
 
 To fully take advantage of the new MM newer versions of certain library should be used. For example (**TODO**: update versions and features):
-* `kotlinx.coroutines`: `1.5.1-new-mm-dev1`
+* `kotlinx.coroutines`: `1.5.1-new-mm-dev1` at https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven
   * No freezing, every common primitive (Channels, Flows, coroutines) work through worker boundaries.
   * `Dispatchers.Default` is backed by a separate worker.
   * `newSingleThreadContext` to create coroutine dispatcher backed by a worker.
   * `Dispatchers.Main` backed by main queue on Darwin and by standalone worker on other platforms. **NOTE**: Don't use `Dispatchers.Main`
      in unit-tests, because nothing is processing the main thread queue in unit-tests.
-* `ktor`: **TODO**
+* `ktor`: `1.6.2-native-mm-eap-196` at https://maven.pkg.jetbrains.space/public/p/ktor/eap
 
-Older versions (including `native-mt` for `kotlinx.coroutines`) could still be used, and will work just like with the previous MM.
+The libraries
+
+Older versions (including `native-mt` for `kotlinx.coroutines`) could still be used, and the existing code will work just like with the previous MM.
 
 ## Performance issues
 
 For the first preview we are using the simplest scheme for garbage collection: single-threaded stop-the-world
-mark-and-sweep algorithm, which is triggered after enough functions and loop iterations were executed. This greatly hinders
+mark-and-sweep algorithm, which is triggered after enough functions, loop iterations and allocations were executed. This greatly hinders
 the performance. One of our top priorities is addressing performance problems.
 
 We don't yet have nice instruments to monitor the GC performance, so for now diagnosing most of these problems requires looking at GC logs.
@@ -103,16 +105,16 @@ A number of known performance issues:
   objects in the heap. The more objects that are kept alive, the longer pauses will be. Large pauses on the main thread
   can result in laggy UI event handling. Both the pause time and the amount of objects in the heap are printed to the logs for each
   cycle of GC.
-* Being stop-the-world also means that all threads with K/N runtime initialized on them need to synchronize at the same
+* Being stop-the-world also means that all threads with Kotlin/Native runtime initialized on them need to synchronize at the same
   time in order for the collection to begin. This also affects the pause time.
-* There is a complicated relationship between Swift/ObjC objects and their K/N counterparts, that causes Swift/ObjC objects
-  to linger longer than necessary, which means that their K/N counterparts are kept in the heap for longer, contributing
+* There is a complicated relationship between Swift/ObjC objects and their Kotlin/Native counterparts, that causes Swift/ObjC objects
+  to linger longer than necessary, which means that their Kotlin/Native counterparts are kept in the heap for longer, contributing
   to the slower collection time. This typically doesn't happen, but in some corner cases, for example, when
   there's a long loop that on each iteration creates a number of temporary objects that cross the Swift/ObjC
   interop boundary (e.g. calling a kotlin callback from a loop in swift or vice versa).
   In the logs there's a number of stable refs in the root set. If this number keeps growing, it may indicate that Swift/ObjC objects
   are not being freed when they should.
-  **TODO**: Mitigating
+  Try putting `autoreleasepool` around loop bodies (both Swift/ObjC and Kotlin) that do interop calls.
 * Our GC triggers do not adapt to the workload: collection may be requested far more frequently than necessary, which means
   that GC time may dominate actually useful application run time and pause the threads more frequently than needed.
   This manifests in time between cycles being close (or even less) than the pause time. Both of these numbers are printed
@@ -135,7 +137,7 @@ A number of known performance issues:
   on another, by the end the object will be frozen, but some subgraph of it might be not.
 * Documentation is not updated to reflect changes for the new MM.
 * There's no handling of application state on iOS: if application goes into the background, the collector will not be
-  throttled down; on the other hand the collection is not force upon going into the background, which leaves
+  throttled down; on the other hand the collection is not forced upon going into the background, which leaves
   the application with a larger memory footprint than necessary, making it a more likely target to be terminated by the OS.
 * WASM (or indeed any target that does not have pthreads) is not supported with the new MM.
 
