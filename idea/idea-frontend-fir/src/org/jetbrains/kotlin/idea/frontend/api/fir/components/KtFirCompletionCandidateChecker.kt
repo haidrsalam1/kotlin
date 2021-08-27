@@ -70,12 +70,13 @@ internal class KtFirCompletionCandidateChecker(
                 explicitReceiver = explicitReceiverExpression
             )
             resolver.resolveSingleCandidate(resolutionParameters)?.let {
+                val substitutor = it.createSubstitutorFromTypeArguments() ?: return@let null
                 return when {
                     candidateSymbol is FirVariable && candidateSymbol.returnTypeRef.coneType.receiverType(rootModuleSession) != null -> {
-                        KtExtensionApplicabilityResult.ApplicableAsFunctionalVariableCall
+                        KtExtensionApplicabilityResult.ApplicableAsFunctionalVariableCall(substitutor)
                     }
                     else -> {
-                        KtExtensionApplicabilityResult.ApplicableAsExtensionCallable
+                        KtExtensionApplicabilityResult.ApplicableAsExtensionCallable(substitutor)
                     }
                 }
             }

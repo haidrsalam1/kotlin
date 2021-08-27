@@ -17,11 +17,11 @@ import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.FirSuperReference
 import org.jetbrains.kotlin.fir.references.impl.FirSimpleNamedReference
 import org.jetbrains.kotlin.fir.resolve.calls.FirErrorReferenceWithCandidate
-import org.jetbrains.kotlin.fir.resolve.substitution.substitutorByMap
-import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
-import org.jetbrains.kotlin.fir.types.*
+import org.jetbrains.kotlin.fir.types.ConeClassLikeType
+import org.jetbrains.kotlin.fir.types.ConeKotlinErrorType
+import org.jetbrains.kotlin.fir.types.classId
+import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.idea.fir.getCandidateSymbols
 import org.jetbrains.kotlin.idea.fir.isImplicitFunctionCall
 import org.jetbrains.kotlin.idea.fir.low.level.api.api.getOrBuildFir
@@ -148,26 +148,8 @@ internal class KtFirCallResolver(
     }
 
     private fun FirFunctionCall.asSimpleFunctionCall(): KtFunctionCall? {
-        val calleeReference = this.calleeReference
-        val target = calleeReference.createCallTarget() ?: return null
-        val symbol = when (calleeReference) {
-            is FirResolvedNamedReference -> calleeReference.resolvedSymbol as? FirCallableSymbol<*>
-            is FirErrorNamedReference -> calleeReference.candidateSymbol as? FirCallableSymbol<*>
-            else -> null
-        } ?: return null
-        return KtFunctionCall(createArgumentMapping(), target, createSubstitutorFromTypeArguments(symbol), token)
-    }
-
-    private fun FirFunctionCall.createSubstitutorFromTypeArguments(functionSymbol: FirCallableSymbol<*>): KtSubstitutor {
-        val typeArgumentMap = mutableMapOf<FirTypeParameterSymbol, ConeKotlinType>()
-        for (i in typeArguments.indices) {
-            val type = typeArguments[i].safeAs<FirTypeProjectionWithVariance>()?.typeRef?.coneType
-            if (type != null) {
-                typeArgumentMap[functionSymbol.typeParameterSymbols[i]] = type
-            }
-        }
-        val coneSubstitutor = substitutorByMap(typeArgumentMap, rootModuleSession)
-        return firSymbolBuilder.typeBuilder.buildSubstitutor(coneSubstitutor)
+        val target = this.calleeReference.createCallTarget() ?: return null
+        return KtFunctionCall(createArgumentMapping(), target, createSubstitutorFromTypeArguments() ?: return null, token)
     }
 
     private fun FirAnnotationCall.asAnnotationCall(): KtAnnotationCall? {
