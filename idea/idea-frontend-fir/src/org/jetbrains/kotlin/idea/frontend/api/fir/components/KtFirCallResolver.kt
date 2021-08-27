@@ -111,7 +111,7 @@ internal class KtFirCallResolver(
             is FirResolvedNamedReference -> {
                 val functionSymbol = callReference.resolvedSymbol as? FirNamedFunctionSymbol
                 (functionSymbol?.fir?.buildSymbol(firSymbolBuilder) as? KtFunctionSymbol)?.let {
-                    functionSymbol to KtSuccessCallTarget(it)
+                    functionSymbol to KtSuccessCallTarget(it, token)
                 } ?: return null
             }
             is FirErrorNamedReference -> {
@@ -122,26 +122,26 @@ internal class KtFirCallResolver(
         }
         val callableId = functionSymbol?.callableId ?: return null
         return if (callableId in kotlinFunctionInvokeCallableIds) {
-            KtFunctionalTypeVariableCall(variableLikeSymbol, createArgumentMapping(), target)
+            KtFunctionalTypeVariableCall(variableLikeSymbol, createArgumentMapping(), target, token)
         } else {
-            KtVariableWithInvokeFunctionCall(variableLikeSymbol, createArgumentMapping(), target)
+            KtVariableWithInvokeFunctionCall(variableLikeSymbol, createArgumentMapping(), target, token)
         }
     }
 
     private fun FirFunctionCall.asSimpleFunctionCall(): KtFunctionCall? {
         val target = calleeReference.createCallTarget() ?: return null
-        return KtFunctionCall(createArgumentMapping(), target)
+        return KtFunctionCall(createArgumentMapping(), target, token)
     }
 
     private fun FirAnnotationCall.asAnnotationCall(): KtAnnotationCall? {
         val target = calleeReference.createCallTarget() ?: return null
-        return KtAnnotationCall(createArgumentMapping(), target)
+        return KtAnnotationCall(createArgumentMapping(), target, token)
     }
 
     private fun FirDelegatedConstructorCall.asDelegatedConstructorCall(): KtDelegatedConstructorCall? {
         val target = calleeReference.createCallTarget() ?: return null
         val kind = if (isSuper) KtDelegatedConstructorCallKind.SUPER_CALL else KtDelegatedConstructorCallKind.THIS_CALL
-        return KtDelegatedConstructorCall(createArgumentMapping(), target, kind)
+        return KtDelegatedConstructorCall(createArgumentMapping(), target, kind, token)
     }
 
     private fun FirConstructor.asDelegatedConstructorCall(): KtDelegatedConstructorCall? {
@@ -159,7 +159,7 @@ internal class KtFirCallResolver(
     private fun FirReference.createCallTarget(): KtCallTarget? {
         return when (this) {
             is FirSuperReference -> createCallTarget(source)
-            is FirResolvedNamedReference -> getKtFunctionOrConstructorSymbol()?.let { KtSuccessCallTarget(it) }
+            is FirResolvedNamedReference -> getKtFunctionOrConstructorSymbol()?.let { KtSuccessCallTarget(it, token) }
             is FirErrorNamedReference -> createErrorCallTarget(source)
             is FirErrorReferenceWithCandidate -> createErrorCallTarget(source)
             is FirSimpleNamedReference ->
@@ -209,15 +209,13 @@ internal class KtFirCallResolver(
         KtErrorCallTarget(
             getCandidateSymbols().mapNotNull { it.fir.buildSymbol(firSymbolBuilder) as? KtFunctionLikeSymbol },
             source?.let { diagnostic.asKtDiagnostic(it, qualifiedAccessSource, diagnosticCache) }
-                ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, diagnostic.reason, token)
-        )
+                ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, diagnostic.reason, token), token)
 
     private fun FirErrorReferenceWithCandidate.createErrorCallTarget(qualifiedAccessSource: FirSourceElement?): KtErrorCallTarget =
         KtErrorCallTarget(
             getCandidateSymbols().mapNotNull { it.fir.buildSymbol(firSymbolBuilder) as? KtFunctionLikeSymbol },
             source?.let { diagnostic.asKtDiagnostic(it, qualifiedAccessSource, diagnosticCache) }
-                ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, diagnostic.reason, token)
-        )
+                ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, diagnostic.reason, token), token)
 
     private fun FirResolvedNamedReference.getKtFunctionOrConstructorSymbol(): KtFunctionLikeSymbol? =
         resolvedSymbol.fir.buildSymbol(firSymbolBuilder) as? KtFunctionLikeSymbol
@@ -230,12 +228,11 @@ internal class KtFirCallResolver(
                         analysisSession.getPrimaryConstructor(it)?.let { ctor -> listOf(ctor) }
                     } ?: emptyList(),
                     source?.let { type.diagnostic.asKtDiagnostic(it, qualifiedAccessSource, diagnosticCache) }
-                        ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, type.diagnostic.reason, token)
-                )
+                        ?: KtNonBoundToPsiErrorDiagnostic(factoryName = null, type.diagnostic.reason, token), token)
             is ConeClassLikeType ->
                 type.classId?.let { classId ->
                     (firSymbolBuilder.classifierBuilder.buildClassLikeSymbolByClassId(classId) as? KtSymbolWithMembers)?.let {
-                        analysisSession.getPrimaryConstructor(it)?.let { ctor -> KtSuccessCallTarget(ctor) }
+                        analysisSession.getPrimaryConstructor(it)?.let { ctor -> KtSuccessCallTarget(ctor, token) }
                     }
                 }
             else ->
