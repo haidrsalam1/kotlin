@@ -82,8 +82,8 @@ internal class FirLightClassForEnumEntry(
 
     private val _extendsList: PsiReferenceList? by lazyPub {
         val mappedType = analyzeWithSymbolAsContext(enumEntrySymbol) {
-            enumEntrySymbol.annotatedType
-                .type.asPsiType(this@FirLightClassForEnumEntry, TypeMappingMode.SUPER_TYPE) as? PsiClassType
+            enumEntrySymbol.annotatedType.type
+                .asPsiType(this@FirLightClassForEnumEntry, TypeMappingMode.SUPER_TYPE, defaultErrorType = null) as? PsiClassType
                 ?: return@lazyPub null
         }
 
