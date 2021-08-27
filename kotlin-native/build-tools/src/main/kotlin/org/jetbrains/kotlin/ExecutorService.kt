@@ -50,7 +50,7 @@ fun create(project: Project): ExecutorService {
     val configurables = project.testTargetConfigurables
 
     return when {
-        project.hasProperty("remote") -> sshExecutor(project)
+        project.hasProperty("remote") -> sshExecutor(project, testTarget)
         configurables is WasmConfigurables -> wasmExecutor(project)
         configurables is ConfigurablesWithEmulator && testTarget != HostManager.host -> emulatorExecutor(project, testTarget)
         configurables.targetTriple.isSimulator -> simulator(project)
@@ -299,7 +299,7 @@ private fun simulator(project: Project): ExecutorService = object : ExecutorServ
  *        Specify it as -Premote=user@host
  */
 @Suppress("KDocUnresolvedReference")
-private fun sshExecutor(project: Project): ExecutorService = object : ExecutorService {
+private fun sshExecutor(project: Project, testTarget: KonanTarget): ExecutorService = object : ExecutorService {
 
     private val remote: String = project.property("remote").toString()
     private val sshArgs: List<String> = System.getenv("SSH_ARGS")?.split(" ") ?: emptyList()
@@ -318,7 +318,7 @@ private fun sshExecutor(project: Project): ExecutorService = object : ExecutorSe
         createRemoteDir()
         val execResult = project.exec {
             action.execute(this)
-            upload(executable)
+            uploadWithLibs(executable, testTarget)
             this.executable = "$remoteDir/${File(executable).name}"
             execFile = executable
             commandLine = arrayListOf("$sshHome/ssh") + sshArgs + remote + commandLine
@@ -343,6 +343,18 @@ private fun sshExecutor(project: Project): ExecutorService = object : ExecutorSe
         project.exec {
             commandLine = arrayListOf("$sshHome/ssh") + sshArgs + remote + "rm" + fileName
         }
+    }
+
+    private fun uploadWithLibs(executableFileName: String, target: KonanTarget) {
+        upload(executableFileName)
+
+        val dynamicSuffix = CompilerOutputKind.DYNAMIC.suffix(target)
+        val directory = File(executableFileName).parentFile?.takeIf { it.isDirectory } ?: return
+        directory.listFiles()
+                .filter { it.isFile && it.name.endsWith(dynamicSuffix) }
+                .forEach {
+                    upload(it.path)
+                }
     }
 }
 
