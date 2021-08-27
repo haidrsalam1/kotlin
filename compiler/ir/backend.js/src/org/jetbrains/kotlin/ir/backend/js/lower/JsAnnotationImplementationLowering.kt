@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.isArray
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isPrimitiveArray
+import org.jetbrains.kotlin.ir.util.render
 
 
 // JS PIR (and IC) requires DeclarationTransformer instead of FileLoweringPass
@@ -55,9 +56,7 @@ class JsAnnotationImplementationTransformer(val jsContext: JsIrBackendContext) :
                 else
                     arraysContentEquals.entries.singleOrNull { (k, _) -> k.isArray() }?.value
             if (requiredSymbol == null) {
-                // This should only happen in tests without 'WITH_RUNTIME' directive and when .equals method is not called
-                // therefore we insert runtime exception here
-                return irBuilder.irCall(jsContext.throwISEsymbol)
+                error("Can't find an Arrays.contentEquals method for array type ${type.render()}")
             }
             irBuilder.irCall(
                 requiredSymbol
