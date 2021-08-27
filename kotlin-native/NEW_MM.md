@@ -36,6 +36,23 @@ Together with the new MM we are bringing in another set of changes:
 
 **NOTE**: The new MM is still in an experimental stage. It's not production-ready.
 
+Update to Kotlin/Native 1.6.0-dev (**TODO**: specify the exact version) and enable dev repositories (**TODO**: Remove after we update to M1):
+```kotlin
+repositories {
+    maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
+}
+```
+to `build.gradle` or `build.gradle.kts`
+```kotlin
+pluginManagement {
+    repositories {
+        maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
+        gradlePluginPortal()
+    }
+}
+```
+to `settings.gradle` or `settings.gradle.kts`.
+
 Add compilation flag `-Xbinary=memoryModel=experimental`.
 
 Alternatively, with gradle you can add
