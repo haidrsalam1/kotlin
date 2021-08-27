@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.descriptors.ClassConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
+import org.jetbrains.kotlin.ir.IrLock
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.util.DeclarationStubGenerator
 import org.jetbrains.kotlin.ir.util.ReferenceSymbolTable
@@ -16,37 +17,47 @@ import org.jetbrains.kotlin.ir.util.SymbolTable
 
 class IrLazySymbolTable(private val originalTable: SymbolTable) : ReferenceSymbolTable by originalTable {
 
+    val lock: IrLock get() = originalTable.lock
+
     /*Don't force builtins class linking before unbound symbols linking: otherwise stdlib compilation will failed*/
     var stubGenerator: DeclarationStubGenerator? = null
 
     override fun referenceClass(descriptor: ClassDescriptor): IrClassSymbol {
-        return originalTable.referenceClass(descriptor).also {
-            if (!it.isBound) {
-                stubGenerator?.generateClassStub(descriptor)
+        synchronized(lock) {
+            return originalTable.referenceClass(descriptor).also {
+                if (!it.isBound) {
+                    stubGenerator?.generateClassStub(descriptor)
+                }
             }
         }
     }
 
     override fun referenceConstructor(descriptor: ClassConstructorDescriptor): IrConstructorSymbol {
-        return originalTable.referenceConstructor(descriptor).also {
-            if (!it.isBound) {
-                stubGenerator?.generateConstructorStub(descriptor)
+        synchronized(lock) {
+            return originalTable.referenceConstructor(descriptor).also {
+                if (!it.isBound) {
+                    stubGenerator?.generateConstructorStub(descriptor)
+                }
             }
         }
     }
 
     override fun referenceEnumEntry(descriptor: ClassDescriptor): IrEnumEntrySymbol {
-        return originalTable.referenceEnumEntry(descriptor).also {
-            if (!it.isBound) {
-                stubGenerator?.generateEnumEntryStub(descriptor)
+        synchronized(lock) {
+            return originalTable.referenceEnumEntry(descriptor).also {
+                if (!it.isBound) {
+                    stubGenerator?.generateEnumEntryStub(descriptor)
+                }
             }
         }
     }
 
     override fun referenceSimpleFunction(descriptor: FunctionDescriptor): IrSimpleFunctionSymbol {
-        return originalTable.referenceSimpleFunction(descriptor).also {
-            if (!it.isBound) {
-                stubGenerator?.generateFunctionStub(descriptor)
+        synchronized(lock) {
+            return originalTable.referenceSimpleFunction(descriptor).also {
+                if (!it.isBound) {
+                    stubGenerator?.generateFunctionStub(descriptor)
+                }
             }
         }
     }
